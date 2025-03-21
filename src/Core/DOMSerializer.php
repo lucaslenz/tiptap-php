@@ -36,7 +36,7 @@ class DOMSerializer
                     }
 
                     $html[] = $this->renderOpeningTag($renderClass, $mark);
-                    # push recently created mark tag to the stack
+                    // push recently created mark tag to the stack
                     $markStack[] = [$renderClass, $mark];
                 }
             }
@@ -96,15 +96,15 @@ class DOMSerializer
                         continue;
                     }
 
-                    # remember which mark tags to close
+                    // remember which mark tags to close
                     $markTagsToClose[] = [$extension, $mark];
                 }
             }
-            # close mark tags and reopen when necessary
+            // close mark tags and reopen when necessary
             $html = array_merge($html, $this->closeAndReopenTags($markTagsToClose, $markStack));
         }
 
-        return join($html);
+        return implode($html);
     }
 
     private function closeAndReopenTags(array $markTagsToClose, array &$markStack): array
@@ -120,19 +120,19 @@ class DOMSerializer
     {
         $html = [];
         while (! empty($markTagsToClose)) {
-            # close mark tag from the top of the stack
+            // close mark tag from the top of the stack
             $markTag = array_pop($markStack);
             $markExtension = $markTag[0];
             $mark = $markTag[1];
             $html[] = $this->renderClosingTag($markExtension->renderHTML($mark));
 
-            # check if the last closed tag is overlapping and has to be reopened
+            // check if the last closed tag is overlapping and has to be reopened
             if (count(array_filter($markTagsToClose, function ($markToClose) use ($markExtension, $mark) {
                 return $markExtension == $markToClose[0] && $mark == $markToClose[1];
             })) == 0) {
                 $markTagsToReopen[] = $markTag;
             } else {
-                # mark tag does not have to be reopened, but deleted from the 'to close' list
+                // mark tag does not have to be reopened, but deleted from the 'to close' list
                 $markTagsToClose = array_udiff($markTagsToClose, [$markTag], function ($a1, $a2) {
                     return strcmp($a1[1]->type, $a2[1]->type);
                 });
@@ -145,7 +145,7 @@ class DOMSerializer
     private function reopenMarkTags($markTagsToReopen, &$markStack): array
     {
         $html = [];
-        # reopen the overlapping mark tags and push them to the stack
+        // reopen the overlapping mark tags and push them to the stack
         foreach (array_reverse($markTagsToReopen) as $markTagToOpen) {
             $renderClass = $markTagToOpen[0];
             $mark = $markTagToOpen[1];
@@ -263,7 +263,7 @@ class DOMSerializer
             foreach ($renderHTML as $index => $renderInstruction) {
                 // ['div', …]
                 if (is_string($renderInstruction)) {
-                    if (is_integer($index) && $nextTag = $renderHTML[$index + 1] ?? null) {
+                    if (is_int($index) && $nextTag = $renderHTML[$index + 1] ?? null) {
                         // ['table', ['class' => 'custom-class']]
                         if (! in_array(0, $nextTag, true)) {
                             if (is_array($nextTag) && $this->isAnAttributeArray($nextTag)) {
@@ -290,7 +290,7 @@ class DOMSerializer
                     }
 
                     // ['div', ?, 'span']
-                    if (is_integer($index) && $nextTag = $renderHTML[$index + 2] ?? null) {
+                    if (is_int($index) && $nextTag = $renderHTML[$index + 2] ?? null) {
                         if (! in_array(0, $nextTag, true)) {
                             if (! $this->isAnAttributeArray($nextTag)) {
                                 $html[] = $this->renderOpeningTag($extension, $nodeOrMark, $nextTag);
@@ -311,10 +311,10 @@ class DOMSerializer
                 }
             }
 
-            return join($html);
+            return implode($html);
         }
 
-        throw new \Exception('[renderOpeningTag] Failed to use renderHTML: ' . json_encode($renderHTML));
+        throw new \Exception('[renderOpeningTag] Failed to use renderHTML: '.json_encode($renderHTML));
     }
 
     private function isAnAttributeArray($items): bool
@@ -372,10 +372,10 @@ class DOMSerializer
                 }
             }
 
-            return join($html);
+            return implode($html);
         }
 
-        throw new \Exception('[renderClosingTag] Failed to use renderHTML: ' . json_encode($renderHTML));
+        throw new \Exception('[renderClosingTag] Failed to use renderHTML: '.json_encode($renderHTML));
     }
 
     public function process(array $value): string
@@ -396,6 +396,6 @@ class DOMSerializer
             $html[] = $this->renderNode($node, $previousNode, $nextNode, $markStack);
         }
 
-        return join($html);
+        return implode($html);
     }
 }
