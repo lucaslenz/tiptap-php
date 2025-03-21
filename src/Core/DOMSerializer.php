@@ -59,7 +59,7 @@ class DOMSerializer
             $html[$lastKey] = $lastElement['content'];
         }
         // child nodes
-        elseif (isset($node->content)) {
+        /*elseif (isset($node->content)) {
             $nestedNodeMarkStack = [];
             foreach ($node->content as $index => $nestedNode) {
                 $previousNestedNode = $node->content[$index - 1] ?? null;
@@ -67,7 +67,7 @@ class DOMSerializer
 
                 $html[] = $this->renderNode($nestedNode, $previousNestedNode, $nextNestedNode, $nestedNodeMarkStack);
             }
-        }
+        }*/
         // renderText($node)
         elseif (isset($extension) && method_exists($extension, 'renderText')) {
             $html[] = $extension->renderText($node);
@@ -308,6 +308,14 @@ class DOMSerializer
                 // ['class' => 'foobar']
                 elseif (is_array($renderInstruction)) {
                     continue;
+                } elseif (is_int($renderInstruction) && $renderInstruction === 0 && isset($nodeOrMark->content)) {
+                    $nestedNodeMarkStack = [];
+                    foreach ($nodeOrMark->content as $index => $nestedNode) {
+                        $previousNestedNode = $nodeOrMark->content[$index - 1] ?? null;
+                        $nextNestedNode = $nodeOrMark->content[$index + 1] ?? null;
+
+                        $html[] = $this->renderNode($nestedNode, $previousNestedNode, $nextNestedNode, $nestedNodeMarkStack);
+                    }
                 }
             }
 
